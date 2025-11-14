@@ -12,37 +12,38 @@ Model name is converted to lowercase for the collection name:
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
-# Example schemas (replace with your own):
-
-class User(BaseModel):
+class Drink(BaseModel):
     """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
+    Drinks collection schema
+    Collection name: "drink"
     """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    name: str = Field(..., description="Drink name")
+    description: Optional[str] = Field(None, description="Short description")
+    price: float = Field(..., ge=0, description="Price in local currency")
+    image: Optional[str] = Field(None, description="Image URL")
+    category: Optional[str] = Field(None, description="Category like coffee/tea/fruit")
+    in_stock: bool = Field(True, description="Availability flag")
 
-class Product(BaseModel):
+class OrderItem(BaseModel):
+    product_id: str = Field(..., description="Drink document _id as string")
+    name: str = Field(..., description="Drink name at time of purchase")
+    price: float = Field(..., ge=0, description="Unit price at time of purchase")
+    quantity: int = Field(..., ge=1, description="Quantity ordered")
+    subtotal: float = Field(..., ge=0, description="Calculated price * quantity")
+
+class Order(BaseModel):
     """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
+    Orders collection schema
+    Collection name: "order"
     """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
-
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+    customer_name: str = Field(..., description="Customer full name")
+    phone: str = Field(..., description="Customer phone number")
+    items: List[OrderItem] = Field(..., description="Line items")
+    total: float = Field(..., ge=0, description="Total amount")
+    status: str = Field("pending", description="Order status: pending/paid/cancelled")
+    payment_method: str = Field("ewallet", description="Payment method used")
+    payment_provider: Optional[str] = Field(None, description="eWallet provider (OVO, GoPay, DANA)")
+    payment_token: Optional[str] = Field(None, description="Payment token/reference")
+    payment_qr: Optional[str] = Field(None, description="Simulated QR or deeplink content")
